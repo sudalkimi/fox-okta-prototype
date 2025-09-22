@@ -1,0 +1,206 @@
+// JHipster Application Configuration with Okta OAuth2
+application {
+  config {
+    baseName myApp
+    packageName com.mycompany.myapp
+    applicationType monolith
+    
+    // Authentication & Security
+    authenticationType oauth2
+    
+    // Database Configuration
+    databaseType sql
+    devDatabaseType h2Disk
+    prodDatabaseType postgresql
+    
+    // Client Framework
+    clientFramework react
+    clientTheme none
+    clientThemeVariant primary
+    
+    // Build & Development
+    buildTool maven
+    serverPort 8080
+    
+    // Testing
+    testFrameworks [cypress, gatling]
+    
+    // Other Options
+    enableHibernateCache true
+    enableSwaggerCodegen false
+    enableTranslation true
+    nativeLanguage en
+    languages [en, es, fr]
+    
+    // Message Broker
+    messageBroker false
+    
+    // Search Engine
+    searchEngine false
+    
+    // Service Discovery
+    serviceDiscoveryType false
+    
+    // Caching
+    cacheProvider ehcache
+    
+    // WebSocket
+    websocket false
+    
+    // JWT (not needed with OAuth2 but included for reference)
+    jwtSecretKey "mySecretKey"
+    
+    // Other settings
+    skipClient false
+    skipServer false
+    jhiPrefix jhi
+    dtoSuffix DTO
+  }
+  
+  // OAuth2 specific configuration
+  // Note: These will be added to application.yml after generation
+  /*
+  OAuth2 Configuration to be added manually to application-dev.yml:
+  
+  spring:
+    security:
+      oauth2:
+        client:
+          registration:
+            oidc:
+              client-id: ${OKTA_CLIENT_ID:your-client-id}
+              client-secret: ${OKTA_CLIENT_SECRET:your-client-secret}
+              scope: openid,profile,email
+          provider:
+            oidc:
+              issuer-uri: ${OKTA_ISSUER_URI:https://your-domain.okta.com/oauth2/default}
+  
+  jhipster:
+    security:
+      oauth2:
+        audience:
+          - account
+          - api://default
+  */
+}
+
+// Sample Entities for your application
+// You can modify or remove these based on your needs
+
+entity User {
+  // JHipster User entity is automatically created
+  // Additional fields can be added via UserExtra entity
+}
+
+entity UserExtra {
+  phoneNumber String maxlength(20)
+  address String maxlength(500)
+  city String maxlength(50)
+  country String maxlength(50)
+  dateOfBirth LocalDate
+}
+
+entity Company {
+  name String required maxlength(100)
+  description TextBlob
+  website String maxlength(200)
+  email String pattern(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)
+  phone String maxlength(20)
+  address String maxlength(500)
+  city String maxlength(50)
+  country String maxlength(50)
+  established LocalDate
+  status CompanyStatus required
+}
+
+entity Department {
+  name String required maxlength(100)
+  description String maxlength(500)
+  location String maxlength(100)
+  budget BigDecimal min(0)
+  established LocalDate
+  isActive Boolean required
+}
+
+entity Employee {
+  employeeId String required unique maxlength(20)
+  firstName String required maxlength(50)
+  lastName String required maxlength(50)
+  email String required pattern(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)
+  phoneNumber String maxlength(20)
+  hireDate LocalDate required
+  salary BigDecimal min(0)
+  position String maxlength(100)
+  isActive Boolean required
+}
+
+entity Project {
+  name String required maxlength(100)
+  description TextBlob
+  startDate LocalDate required
+  endDate LocalDate
+  budget BigDecimal min(0)
+  status ProjectStatus required
+  priority Priority required
+  clientName String maxlength(100)
+}
+
+entity Task {
+  title String required maxlength(200)
+  description TextBlob
+  dueDate LocalDate
+  completed Boolean required
+  priority Priority required
+  estimatedHours Integer min(0)
+  actualHours Integer min(0)
+  createdDate Instant required
+  lastModified Instant
+}
+
+// Enums
+enum CompanyStatus {
+  ACTIVE,
+  INACTIVE,
+  SUSPENDED
+}
+
+enum ProjectStatus {
+  PLANNING,
+  IN_PROGRESS,
+  ON_HOLD,
+  COMPLETED,
+  CANCELLED
+}
+
+enum Priority {
+  LOW,
+  MEDIUM,
+  HIGH,
+  URGENT
+}
+
+// Relationships
+relationship OneToOne {
+  UserExtra{user(login) required} to User{userExtra}
+}
+
+relationship ManyToOne {
+  Department{company(name) required} to Company{departments}
+  Employee{department(name)} to Department{employees}
+  Employee{user(login)} to User
+  Project{company(name) required} to Company{projects}
+  Project{department(name)} to Department{projects}
+  Task{project(name) required} to Project{tasks}
+  Task{assignedTo(firstName)} to Employee{tasks}
+}
+
+relationship ManyToMany {
+  Employee{projects(name)} to Project{employees(firstName)}
+}
+
+// Options
+dto * with mapstruct
+service * with serviceClass
+paginate * with pagination
+filter Company, Employee, Project, Task
+

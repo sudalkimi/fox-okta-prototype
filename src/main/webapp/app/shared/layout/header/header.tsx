@@ -57,7 +57,7 @@ const Header = (props: IHeaderProps) => {
             {props.isAuthenticated && props.isAdmin && (
               <AdminMenu showOpenAPI={props.isOpenAPIEnabled} showDatabase={!props.isInProduction} />
             )}
-            <LocaleMenu currentLocale={props.currentLocale} onClick={handleLocaleChange} />
+            {/* <LocaleMenu currentLocale={props.currentLocale} onClick={handleLocaleChange} /> */}
             <AccountMenu isAuthenticated={props.isAuthenticated} />
           </Nav>
         </Collapse>
